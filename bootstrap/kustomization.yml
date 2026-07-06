@@ -1,0 +1,43 @@
+# bootstrap/kustomization.yaml
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - root.yaml
+  - ollama.yaml
+  - gpu-operator.yaml
+  # add each new Application file here as you create them
+
+# A generated ConfigMap holding shared values — this is your "variables file"
+configMapGenerator:
+  - name: cluster-vars
+    literals:
+      - repoURL=https://github.com/ZeusThaBomb/homelab-gitops.git
+      - targetRevision=main
+
+# Propagate those values into every Application that needs them, instead of
+# hardcoding repoURL/targetRevision in each file individually
+replacements:
+  - source:
+      kind: ConfigMap
+      name: cluster-vars
+      fieldPath: data.repoURL
+    targets:
+      - select:
+          kind: Application
+        fieldPaths:
+          - spec.source.repoURL
+        # applies to every Application in this Kustomization that HAS this field —
+        # Helm-repo-sourced Applications (like gpu-operator, whose repoURL points at
+        # helm.ngc.nvidia.com, not your git repo) are a different field path and are
+        # untouched by this replacement, so mixing Git-sourced and Helm-sourced
+        # Applications in the same folder is safe.
+  - source:
+      kind: ConfigMap
+      name: cluster-vars
+      fieldPath: data.targetRevision
+    targets:
+      - select:
+          kind: Application
+        fieldPaths:
+          - spec.source.targetRevision

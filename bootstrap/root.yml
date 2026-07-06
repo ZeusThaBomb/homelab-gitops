@@ -1,0 +1,20 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: root
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/ZeusThaBomb/homelab-gitops.git
+    targetRevision: main
+    path: bootstrap
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: argocd
+  syncPolicy:
+    automated:
+      prune: true          # deleting a manifest from Git deletes the resource. Git IS the truth.
+      selfHeal: true       # manual kubectl edits get reverted. This is drift correction, live.
+    syncOptions:
+      - CreateNamespace=true
