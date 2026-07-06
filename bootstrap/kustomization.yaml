@@ -16,8 +16,16 @@ configMapGenerator:
       - repoURL=https://github.com/ZeusThaBomb/homelab-gitops.git
       - targetRevision=main
 
-# Propagate those values into every Application that needs them, instead of
-# hardcoding repoURL/targetRevision in each file individually
+# Propagate those values into the Git-sourced Applications, instead of
+# hardcoding repoURL/targetRevision in each file individually.
+#
+# IMPORTANT: Helm-repo-sourced Applications (sealed-secrets -> bitnami.github.io,
+# gpu-operator -> helm.ngc.nvidia.com) use the SAME spec.source.repoURL /
+# spec.source.targetRevision fields as Git-sourced ones. Kustomize replacements
+# match on the field path, not on the value, so without an explicit `reject`
+# these would overwrite the Helm repo URL/version with the Git repo's — ArgoCD
+# then tries to load a Helm index from the Git repo and fails with 404. Reject
+# every Helm-sourced Application by name so the replacement only touches Git apps.
 replacements:
   - source:
       kind: ConfigMap
@@ -26,13 +34,11 @@ replacements:
     targets:
       - select:
           kind: Application
+        reject:
+          - name: sealed-secrets
+          - name: gpu-operator
         fieldPaths:
           - spec.source.repoURL
-        # applies to every Application in this Kustomization that HAS this field —
-        # Helm-repo-sourced Applications (like gpu-operator, whose repoURL points at
-        # helm.ngc.nvidia.com, not your git repo) are a different field path and are
-        # untouched by this replacement, so mixing Git-sourced and Helm-sourced
-        # Applications in the same folder is safe.
   - source:
       kind: ConfigMap
       name: cluster-vars
@@ -40,5 +46,8 @@ replacements:
     targets:
       - select:
           kind: Application
+        reject:
+          - name: sealed-secrets
+          - name: gpu-operator
         fieldPaths:
           - spec.source.targetRevision
