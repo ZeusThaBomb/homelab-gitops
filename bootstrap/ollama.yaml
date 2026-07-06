@@ -8,34 +8,10 @@ spec:
   source:
     repoURL: PLACEHOLDER              # filled in by the Kustomize replacement above
     targetRevision: PLACEHOLDER
-    path: apps/ollama                 # plain YAML manifests in your repo
+    path: apps/ollama                 # plain YAML manifests in your repo — MUST already exist
   destination:
     server: https://kubernetes.default.svc
     namespace: ai
-  syncPolicy:
-    automated: { prune: true, selfHeal: true }
-    syncOptions: [ "CreateNamespace=true" ]
----
-# Helm-chart components reference the upstream chart directly instead — this repoURL
-# points at a Helm repo, NOT your git repo, so it is untouched by the replacement above:
-apiVersion: argoproj.io/v1alpha1
-kind: Application
-metadata:
-  name: gpu-operator
-  namespace: argocd
-spec:
-  project: default
-  source:
-    repoURL: https://helm.ngc.nvidia.com/nvidia   # a Helm repo, not Git — left as-is
-    chart: gpu-operator
-    targetRevision: v25.3.0                        # PIN versions. 'latest' is not GitOps.
-    helm:
-      valuesObject:
-        driver:
-          enabled: false    # we install the driver in the VM ourselves (Phase 3)
-  destination:
-    server: https://kubernetes.default.svc
-    namespace: gpu-operator
   syncPolicy:
     automated: { prune: true, selfHeal: true }
     syncOptions: [ "CreateNamespace=true" ]
