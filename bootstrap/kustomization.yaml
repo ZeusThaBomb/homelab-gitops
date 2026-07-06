@@ -4,8 +4,8 @@ kind: Kustomization
 
 resources:
   - root.yaml
-  - ollama.yaml
-  #- gpu-operator.yaml no implemented yet
+  #- ollama.yaml not implemented yet
+  #- gpu-operator.yaml not implemented yet
   # add each new Application file here as you create them
 
 # A generated ConfigMap holding shared values — this is your "variables file"
