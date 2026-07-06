@@ -6,7 +6,7 @@ resources:
   - root.yaml
   - sealed-secrets.yaml
   #- ollama.yaml not implemented yet
-  #- gpu-operator.yaml not implemented yet
+  - gpu-operator.yaml
   # add each new Application file here as you create them
 
 # A generated ConfigMap holding shared values — this is your "variables file"
